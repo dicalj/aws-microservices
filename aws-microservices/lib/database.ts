@@ -5,14 +5,17 @@ import { Construct } from "constructs";
 export class SwnDatabase extends Construct {
   public readonly basketTable: ITable;
   public readonly productTable: ITable;
+  public readonly orderTable: ITable;
 
   constructor(scope: Construct, id: string) {
     super(scope, id)
 
     // product table
-    this.productTable = this.createProductTable()
+    this.productTable = this.createProductTable();
     // basket table
-    this.basketTable = this.createBasketTable()
+    this.basketTable = this.createBasketTable();
+    // order table
+    this.orderTable = this.createOrderTable();
   }
 
   /**
@@ -53,5 +56,36 @@ export class SwnDatabase extends Construct {
     });
 
     return productTable;
+  }
+
+  /**
+   * Create order dynamodb table
+   * -- pk : userName
+   * -- sk : orderDate
+   * -- : totalPrice
+   * -- : firstName
+   * -- : lastName
+   * -- : email
+   * -- : address
+   * -- : paymentMethod
+   * -- : cardInfo
+   * @returns {ITable}
+   */
+  private createOrderTable(): ITable {
+    const orderTable = new Table(this, 'order', {
+      partitionKey: {
+        name: 'userName',
+        type: AttributeType.STRING
+      },
+      sortKey: {
+        name: 'orderDate',
+        type: AttributeType.STRING
+      },
+      tableName: 'order',
+      removalPolicy: RemovalPolicy.DESTROY,
+      billingMode: BillingMode.PAY_PER_REQUEST
+    });
+
+    return orderTable;
   }
 }

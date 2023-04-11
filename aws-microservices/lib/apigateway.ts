@@ -1,10 +1,11 @@
-import { IFunction, Runtime } from "aws-cdk-lib/aws-lambda";
+import { IFunction } from "aws-cdk-lib/aws-lambda";
 import { Construct } from "constructs";
 import { LambdaRestApi } from "aws-cdk-lib/aws-apigateway";
 
 interface SwnApiGatewayProps {
   productMicroservice: IFunction;
   basketMicroservice: IFunction;
+  orderingMicroservice: IFunction;
 }
 
 export class SwnApiGateway extends Construct {
@@ -14,6 +15,7 @@ export class SwnApiGateway extends Construct {
 
     this.createProductApi(props.productMicroservice);
     this.createBasketApi(props.basketMicroservice);
+    this.createOrderApi(props.orderingMicroservice);
   }
 
   private createBasketApi(basketMicroservice: IFunction): LambdaRestApi {
@@ -79,6 +81,31 @@ export class SwnApiGateway extends Construct {
     singleProduct.addMethod('GET') // GET /product/{id}
     singleProduct.addMethod('PUT') // PUT /product/{id}
     singleProduct.addMethod('DELETE') // DELETE /product/{id}
+
+    return apgw
+  }
+
+  private createOrderApi(orderingMicroservice: IFunction): LambdaRestApi {
+    // Order microservices api gateway
+    // root name = order
+
+    // GET /order
+    // GET /order/{userName}
+
+    const apgw = new LambdaRestApi(this, 'orderApi', {
+      restApiName: 'Order Service',
+      handler: orderingMicroservice,
+      proxy: false,
+      integrationOptions: {
+        allowTestInvoke: false
+      }
+    });
+
+    const order = apgw.root.addResource('order')
+    order.addMethod('GET') // GET /order
+
+    const singleOrder = order.addResource('{userName}')
+    singleOrder.addMethod('GET') // GET /order/{userName}
 
     return apgw
   }
