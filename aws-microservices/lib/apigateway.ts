@@ -3,14 +3,58 @@ import { Construct } from "constructs";
 import { LambdaRestApi } from "aws-cdk-lib/aws-apigateway";
 
 interface SwnApiGatewayProps {
-  productMicroservice: IFunction
+  productMicroservice: IFunction;
+  basketMicroservice: IFunction;
 }
 
 export class SwnApiGateway extends Construct {
+
   constructor(scope: Construct, id: string, props: SwnApiGatewayProps) {
     super(scope, id)
 
-    // product
+    this.createProductApi(props.productMicroservice);
+    this.createBasketApi(props.basketMicroservice);
+  }
+
+  private createBasketApi(basketMicroservice: IFunction): LambdaRestApi {
+    // Basket microservices api gateway
+    // root name = basket
+
+    // GET /basket
+    // POST /basket
+
+    // GET /basket/{userName}
+    // DELETE /basket/{userName}
+
+    // POST /basket/checkout
+
+    const apgw = new LambdaRestApi(this, 'basketApi', {
+      restApiName: 'Basket Service',
+      handler: basketMicroservice,
+      proxy: false,
+      integrationOptions: {
+        allowTestInvoke: false
+      }
+    });
+
+    const basket = apgw.root.addResource('basket')
+    basket.addMethod('GET') // GET /basket
+    basket.addMethod('POST') // POST /basket
+
+    const singleBasket = basket.addResource('{userName}')
+    singleBasket.addMethod('GET') // GET /basket/{userName}
+    singleBasket.addMethod('DELETE') // DELETE /basket/{userName}
+
+    const basketCheckout = basket.addResource('checkout')
+    basketCheckout.addMethod('POST') // POST /basket/checkout
+
+    return apgw
+  }
+
+  private createProductApi(productMicroservice: IFunction): LambdaRestApi {
+    // Product microservices api gateway
+    // root name = product
+
     // GET /product
     // POST /product
 
@@ -20,7 +64,7 @@ export class SwnApiGateway extends Construct {
 
     const apgw = new LambdaRestApi(this, 'productApi', {
       restApiName: 'Product Service',
-      handler: props.productMicroservice,
+      handler: productMicroservice,
       proxy: false,
       integrationOptions: {
         allowTestInvoke: false
@@ -35,5 +79,7 @@ export class SwnApiGateway extends Construct {
     singleProduct.addMethod('GET') // GET /product/{id}
     singleProduct.addMethod('PUT') // PUT /product/{id}
     singleProduct.addMethod('DELETE') // DELETE /product/{id}
+
+    return apgw
   }
 }

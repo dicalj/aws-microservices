@@ -3,13 +3,46 @@ import { AttributeType, BillingMode, ITable, Table } from "aws-cdk-lib/aws-dynam
 import { Construct } from "constructs";
 
 export class SwnDatabase extends Construct {
+  public readonly basketTable: ITable;
   public readonly productTable: ITable;
 
   constructor(scope: Construct, id: string) {
     super(scope, id)
 
-    // Product DynamoDB Table Creation
-    this.productTable = new Table(this, 'product', {
+    // product table
+    this.productTable = this.createProductTable()
+    // basket table
+    this.basketTable = this.createBasketTable()
+  }
+
+  /**
+   * Create basket dynamodb table
+   * basket : PK: userName -- items (SET-MAP object)
+   *    item1 - { quantity - color - price - productId - productName }
+   *    item2 - { quantity - color - price - productId - productName }
+   * @returns {ITable}
+   */
+  private createBasketTable(): ITable {
+    const basketTable = new Table(this, 'basket', {
+      partitionKey: {
+        name: 'userName',
+        type: AttributeType.STRING
+      },
+      tableName: 'basket',
+      removalPolicy: RemovalPolicy.DESTROY,
+      billingMode: BillingMode.PAY_PER_REQUEST
+    });
+
+    return basketTable;
+  }
+
+  /**
+   * Create product dynamodb table
+   * product : PK: id -- name -- description -- imageFile -- price -- category
+   * @returns {ITable}
+   */
+  private createProductTable(): ITable {
+    const productTable = new Table(this, 'product', {
       partitionKey: {
         name: 'id',
         type: AttributeType.STRING
@@ -18,5 +51,7 @@ export class SwnDatabase extends Construct {
       removalPolicy: RemovalPolicy.DESTROY,
       billingMode: BillingMode.PAY_PER_REQUEST
     });
+
+    return productTable;
   }
 }
