@@ -4,6 +4,7 @@ import { SwnDatabase } from './database';
 import { SwnMicroservice } from './microservice';
 import { SwnApiGateway } from './apigateway';
 import { SwnEventBus } from './eventbus';
+import { SwnQueue } from './queue';
 
 export class AwsMicroservicesStack extends cdk.Stack {
 
@@ -22,11 +23,15 @@ export class AwsMicroservicesStack extends cdk.Stack {
       productMicroservice: microservices.productMicroservice,
       basketMicroservice: microservices.basketMicroservice,
       orderingMicroservice: microservices.orderingMicroservice
-    })
+    });
+
+    const queue = new SwnQueue(this, 'Queue', {
+      consumer: microservices.orderingMicroservice
+    });
 
     const eventbus = new SwnEventBus(this, 'EventBus', {
       publisherFunction: microservices.basketMicroservice,
-      targetFunction: microservices.orderingMicroservice
+      targetQueue: queue.orderQueue
     });
   }
 }
