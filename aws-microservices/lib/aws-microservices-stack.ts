@@ -36,7 +36,9 @@ export class AwsMicroservicesStack extends cdk.Stack {
     });
 
     const cloudwatch = new SwnCloudWatch(this, 'CloudWatch', {
-      productMicroservice: microservices.productMicroservice
+      basketMicroservice: microservices.basketMicroservice,
+      orderMicroservice: microservices.orderingMicroservice,
+      productMicroservice: microservices.productMicroservice,
     })
   }
 }
