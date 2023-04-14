@@ -5,6 +5,7 @@ import { SwnMicroservice } from './microservice';
 import { SwnApiGateway } from './apigateway';
 import { SwnEventBus } from './eventbus';
 import { SwnQueue } from './queue';
+import { SwnCloudWatch } from './cloudwatch';
 
 export class AwsMicroservicesStack extends cdk.Stack {
 
@@ -33,5 +34,9 @@ export class AwsMicroservicesStack extends cdk.Stack {
       publisherFunction: microservices.basketMicroservice,
       targetQueue: queue.orderQueue
     });
+
+    const cloudwatch = new SwnCloudWatch(this, 'CloudWatch', {
+      productMicroservice: microservices.productMicroservice
+    })
   }
 }
